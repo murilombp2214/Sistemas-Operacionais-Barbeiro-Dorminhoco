@@ -1,0 +1,2 @@
+﻿Resolução do barbeiro dorminhoco utilizando 
+memoria compartilhada no windows
