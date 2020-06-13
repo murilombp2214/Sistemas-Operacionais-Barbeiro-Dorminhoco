@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -233,6 +233,7 @@ namespace Semafaro
 
         private static void MostrarDados()
         {
+            //mostra os dados atuais
             Console.WriteLine("********************************");
             Console.WriteLine("Quantidade de clientes na fila: {0}", ProcessosClientes.Count);
             Console.WriteLine("Quantidade de barbeiros: {0}", 1);
@@ -279,11 +280,13 @@ namespace Semafaro
         /// <param name="nomeCliente"></param>
         private static void CrieCliente(string nomeCliente)
         {
+            //caso o cliente chegue e não há lugar para sentar ele vai embora
             if (ProcessosClientes.Count >= qtdMaxSemafaro)
             {
                 Console.WriteLine("o Cliente {0} foi embora pois não avia lugar de esperar", nomeCliente);
                 return;
             }
+
             if (string.IsNullOrEmpty(nomeCliente))
             {
                 Console.WriteLine("Nome do cliente não pode ser vazio");
@@ -291,9 +294,15 @@ namespace Semafaro
             }
 
             Console.WriteLine("Criando processo do cliente '{0}'", nomeCliente);
+
+            //cria um processo 
             var processo = new Process();
             processo.StartInfo.FileName = fileName;
+
+            //passa um argumento para a criação do processo informado que o mesmo deve se trabalhar como um cliente
             processo.StartInfo.ArgumentList.Add(Dorminhoco.Cliente.ToString());
+
+            //exibe mensagem de informação que o processo foi criado
             Console.WriteLine("Cliente {0} criado ", nomeCliente);
             ProcessosClientes.Enqueue(processo);
             Semafaro.Up(() =>
@@ -310,34 +319,23 @@ namespace Semafaro
         /// <returns></returns>
         private static Process CrieBarbeiro()
         {
+            //cria um processo
             var processo = new Process();
             processo.StartInfo.FileName = fileName;
             processo.EnableRaisingEvents = true;
+
+            //passa um argumento para a criação do processo informado que o mesmo deve se trabalhar como um barbeiro
             processo.StartInfo.ArgumentList.Add(Dorminhoco.Barbeiro.ToString());
-            processo.ErrorDataReceived += Processo_ErrorDataReceived;
-            processo.OutputDataReceived += Processo_OutputDataReceived;
-            processo.Exited += Processo_Exited;
+
+            //starta o processo
             processo.Start();
+
+            //exibe mensagem de informação que o processo foi criado
             Console.WriteLine("Barbeiro {0} criado", processo.Id);
             ProcessosBarbeiros.Add(processo);
             return processo;
         }
 
-        private static void Processo_Exited(object sender, EventArgs e)
-        {
-            var p = sender as Process;
-            p.Start();
-        }
-
-        private static void Processo_OutputDataReceived(object sender, DataReceivedEventArgs e)
-        {
-            //
-        }
-
-        private static void Processo_ErrorDataReceived(object sender, DataReceivedEventArgs e)
-        {
-            //
-        }
     }
 
 }
@@ -347,13 +345,3 @@ namespace Semafaro
 
 
 
-
-//WINDOWS
-//Compartilhando memoria entre processos por PIPE NOMEADO
-//PROCESSO PAI
-//**CRIA ARQUIVO DE PIPE COM UM NOME
-//****GRAVA DADOS
-//**USA O EVENTO 
-//PROCESSO FILHO eventToChild  PARA NOTIFICAR O FILHO QUE OS DADOS SERÂO INVIADOS
-//**CRIA ARQUIVO DE PIPE COM O MESMO NOME DO PAI
-//****RECEBE NOTIFICAÇÂO DO EVENTO eventFromChild 
